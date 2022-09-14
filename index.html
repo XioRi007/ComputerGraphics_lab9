@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+    <head> 
+         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+         <title>Лабораторна робота 9 </title>
+	     <script src="./js/three.js"></script>
+		 <script src="./js/TrackballControls.js"></script>		
+	 	 <script src="./js/tween.js"></script>
+		  <script src="./js/dat.gui.js"></script>
+	</head>
+	<body>
+	<video id="video"  loop autoplay="autoplay"
+		style="display:none; position: absolute; left: 15px; top: 75px;"
+		src="./movies/video.mp4"> 
+</video>
+        
+		<script>
+
+		
+		init();
+	
+			function init()
+			{
+				
+				// створюємо рендер і задаємо розмір
+				var renderer = window.WebGLRenderingContext ? new THREE.WebGLRenderer({antialias:true}) : new THREE.CanvasRenderer();
+				renderer.setClearColor(new THREE.Color(0xEEEEEE));
+                renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.shadowMapEnabled = true;
+				// додаємо вивід візуалізатора до html-елементу
+				document.body.appendChild( renderer.domElement );
+				
+							
+				var video = document.getElementById('video');
+				var videoTexture = new THREE.Texture( video );
+				videoTexture.minFilter = THREE.LinearFilter;
+				videoTexture.magFilter = THREE.LinearFilter;
+				videoTexture.format = THREE.RGBFormat;
+				videoTexture.generateMipmaps = false;
+				
+				
+				
+				// створюємо камеру
+				var camera = new THREE.PerspectiveCamera(45,window.innerWidth / window.innerHeight, 0.1,1000);
+				// створюємо сцену, яка буде містити всі наші елементи, такі як об'єкти, камери і джерела світла
+				var scene = new THREE.Scene();
+			
+				var controls = new THREE.TrackballControls( camera );
+					            	
+				var ambientLight = new THREE.AmbientLight(0xffffff);
+               	scene.add(ambientLight);
+				var spotLight = new THREE.SpotLight( 0xffffff );
+				
+             	spotLight.position.set( -80,120, -20 );
+				spotLight.castShadow = true;
+                scene.add( spotLight );
+				
+				
+									
+				var fontLoader = new THREE.FontLoader();
+				fontLoader.load("./fonts/Academia Libera_Regular.json",function(tex){ 
+				var  text_Geometry = new THREE.TextGeometry("Кафедра програмної інженерії", {
+				size: 10,
+				height: 3,
+				curveSegments: 6,
+				bevelEnabled: true, 
+				bevelThickness: 2, 
+				bevelSize: 1, 
+				material: 0, 
+				extrudeMaterial: 1, 				
+				font: tex});
+
+				//лого				
+				var circle_position = { x : -300, y: 0 };
+				var sphere_position = {x:300,y:0,z:0};
+				
+
+				var circle_position = { x : -70, y: 30, z:50 };	
+				var circle_target = {};
+				circle_target.x = 10;
+				circle_target.y = 50;  					
+				circle_target.z = 50;  	
+								
+                var circle_geometry = new THREE.CircleGeometry( 6, 100, 0, 2*Math.PI );
+				var circle_texture = new THREE.TextureLoader().load( 'images/logo.jpg' );//load texture
+				var circle_material = new THREE.MeshLambertMaterial({map: circle_texture});
+				circle_material.side = THREE.DoubleSide;
+				var circle = new THREE.Mesh(circle_geometry, circle_material);
+				circle.castShadow = true;
+				circle.position.x=-90;
+				circle.position.y=0;
+				scene.add(circle);
+				
+				
+				var circle_tween = new TWEEN.Tween(circle_position).to(circle_target, 4000);
+				circle_tween.easing(TWEEN.Easing.Cubic.InOut);
+				circle_tween.repeat(Infinity);
+				circle_tween.yoyo(true); 
+				
+				circle_tween.start();
+				
+				circle_tween.onUpdate(function(){
+				circle.position.x = circle_position.x;
+				circle.position.y =circle_position.y;
+				circle.position.z = circle_position.z;
+				circle.rotation.x += 0.02;
+				circle.rotation.y += 0.02;					
+				circle.rotation.z += 0.02;
+				
+				});
+
+				//текст
+				var Texture = THREE.ImageUtils.loadTexture( 'images/fire.jpg' ); 
+				Texture.wrapS = Texture.wrapT = THREE.RepeatWrapping; 
+				Texture.repeat.set( 0.05, 0.05 ); 
+				var Material = new THREE.MeshBasicMaterial( { map: Texture } ); 
+    	 	 	
+				var ExtrTexture =  THREE.ImageUtils.loadTexture( 'images/sky.jpg' ); 
+				ExtrTexture.wrapS = ExtrTexture.wrapT  = THREE.RepeatWrapping;
+				ExtrTexture.offset.set( 0, 0.7 );
+				ExtrTexture.repeat.set( 0, 0.13 ); 
+				var extrMaterial =  new THREE.MeshBasicMaterial( { map: ExtrTexture } ); 
+
+				
+				var text_position = { x : -70, y: 100 };
+    
+				var materials = [ Material, extrMaterial ]; 
+				var text = new THREE.Mesh(text_Geometry, materials );
+								
+				var text_target = {};
+				text_target.x = -70;
+				text_target.y = 20;
+								
+				text.position.x=-300;
+				text.position.y=100;
+				scene.add(text);
+				
+				var text_tween = new TWEEN.Tween(text_position).to(text_target, 1000);
+				text_tween.start();
+				text_tween.onUpdate(function(){
+					text.position.x = text_position.x;
+					text.position.y = text_position.y;
+				});
+				var text_target1 = {};
+				text_target1.x = -70;
+				text_target1.y = 30;
+				text_tween.onComplete(function() {
+					var text_tween1 = new TWEEN.Tween(text_target).to(text_target1, 1000);
+					text_tween1.repeat(Infinity);
+					text_tween1.yoyo(true);
+					text_tween1.start();					
+					text_tween1.onUpdate(function(){
+			
+					
+					text.position.x = text_target.x;
+					text.position.y = text_target.y;
+					});
+				});
+
+				})
+             
+			 
+			 	camera.position.x = -50; 
+				camera.position.y = 70; 
+				camera.position.z = 100; 
+				camera.lookAt(scene.position);
+				
+
+				//пирамида
+				const mats = [ 					
+					new THREE.MeshBasicMaterial({color:0xfff000, transparent:true}),
+					new THREE.MeshBasicMaterial({color:0xfff000, transparent:true}),
+					new THREE.MeshBasicMaterial({map: videoTexture}),
+				];
+				const cone = makeCone( 0, 1, 28, mats);//
+				scene.add( cone );
+
+				var cone_position = {};
+				cone_position.x = 0;
+				cone_position.y = 1;
+
+				var cone_target = {};
+				cone_target.x = 0;
+				cone_target.y = 30;
+
+				var i = 0;
+				var slice = 2 * Math.PI / 360;
+				const center = {X:0, Y:1};
+				const radius = 20;
+
+				var cone_tween = new TWEEN.Tween(cone_position).to(cone_target, 2000);
+				cone_tween.repeat(Infinity);
+				cone_tween.start();
+				cone_tween.onUpdate(()=>{
+					const angle = slice * i;
+					const newX = (center.X + radius * Math.cos(angle));
+					const newY = (center.Y + radius * Math.sin(angle));
+					cone.position.x = newX;
+					cone.position.y = newY;
+					i++;
+
+				})
+
+				var video_controls = new function () {
+
+					this.showVideo = false;
+
+					this.showCanvas = function () {
+						if (video_controls.showVideo) {
+							video.play();
+						} else {
+							video.pause();
+						}
+					}
+				};
+
+				var gui = new dat.GUI();
+				gui.add(video_controls, "showVideo").onChange(video_controls.showCanvas);
+				
+				
+	 			renderScene();
+				
+
+				function renderScene() 
+				{
+				videoTexture.needsUpdate = true;
+		  		requestAnimationFrame( renderScene );
+				controls.update();
+				TWEEN.update();
+				
+				renderer.render( scene, camera );
+				}	
+			
+};
+
+				function makeCone(x, y, z, material){
+					const geometry = new THREE.ConeGeometry( 10, 20, 4 );
+					const cone = new THREE.Mesh( geometry, material );
+
+					cone.position.x = x;
+					cone.position.y = y;
+					cone.position.z = z;
+					cone.rotation.x += 300;
+					cone.rotation.y += 1.55;
+				
+					return cone;
+				}
+
+		</script>
+	</body>
+</html>
